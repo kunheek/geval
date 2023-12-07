@@ -1,0 +1,7 @@
+tensorflow>=2.0
+# dlib
+face_alignment
+matplotlib
+scipy
+requests
+tqdm
