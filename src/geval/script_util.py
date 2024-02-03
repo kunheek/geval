@@ -86,6 +86,8 @@ def compute_reps_from_batch(
 
     for idx in range(0, batch.shape[0], batch_size):
         minibatch = batch[idx:idx+batch_size].to(device)
+        if minibatch.shape[0] <= 0:
+            break
 
         minibatch = model.transform_tensor(minibatch, normalize=True)
         pred = model(minibatch)
