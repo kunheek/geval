@@ -84,11 +84,19 @@ def compute_reps_from_batch(
                          depth=depth)
     model.eval()
 
-    for idx in range(0, batch.shape[0], batch_size):
-        minibatch = batch[idx:idx+batch_size].to(device)
-        if minibatch.shape[0] <= 0:
-            break
+    dataset = torch.utils.data.TensorDataset(batch)
+    dataloader = torch.utils.data.DataLoader(
+        dataset, batch_size=batch_size, shuffle=False, num_workers=1,
+        pin_memory=False, drop_last=False,
+    )
 
+    pred_arr = []
+    # for idx in range(0, batch.shape[0], batch_size):
+    for minibatch in dataloader:
+        # minibatch = batch[idx:idx+batch_size].to(device)
+        # if minibatch.shape[0] <= 0:
+        #     break
+        minibatch = minibatch.to(device)
         minibatch = model.transform_tensor(minibatch, normalize=True)
         pred = model(minibatch)
 
@@ -106,12 +114,7 @@ def compute_reps_from_batch(
         if normalized:
             pred = F.normalize(pred, dim=-1)
         pred = pred.cpu().numpy()
+        pred_arr.append(pred)
 
-        if idx == 0:
-            # initialize output array with full dataset size
-            dims = pred.shape[-1]
-            pred_arr = np.empty((minibatch.shape[0], dims))
-
-        pred_arr[idx:idx+pred.shape[0]] = pred
-
+    pred_arr = np.concatenate(pred_arr, axis=0)
     return pred_arr
