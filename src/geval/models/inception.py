@@ -419,18 +419,9 @@ class InceptionEncoder(Encoder):
                               align_corners=False).squeeze()
         return image
 
-    def transform_tensor(self, image, normalize=True):
-        H = image.shape[-2]
-        W = image.shape[-1]
-        if H != 299 or W != 299:
-            image = F.interpolate(
-                image, size=(299, 299), mode='bicubic', align_corners=False,
-            )
-        if normalize:
-            imagenet_mean = np.array([0.485, 0.456, 0.406])
-            imagenet_std = np.array([0.229, 0.224, 0.225])
-            image = TF.functional.normalize(image, imagenet_mean, imagenet_std)
-        return image
+    @property
+    def input_size(self):
+        return (299, 299)
 
     def get_label(self, features):
         return self.model.get_label(features)

@@ -9,11 +9,9 @@
 # DeiT: https://github.com/facebookresearch/deit
 # --------------------------------------------------------
 
-import torchvision.transforms as TF
 import numpy as np
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
+import torchvision.transforms as TF
 
 import sys
 
@@ -58,15 +56,6 @@ class DINOv2Encoder(Encoder):
 
         return TF.Normalize(imagenet_mean, imagenet_std)(image)
 
-    def transform_tensor(self, image, normalize=True):
-        H = image.shape[-2]
-        W = image.shape[-1]
-        if H != 224 or W != 224:
-            image = F.interpolate(
-                image, size=(224, 224), mode='bicubic', align_corners=False,
-            )
-        if normalize:
-            imagenet_mean = np.array([0.485, 0.456, 0.406])
-            imagenet_std = np.array([0.229, 0.224, 0.225])
-            image = TF.functional.normalize(image, imagenet_mean, imagenet_std)
-        return image
+    @property
+    def input_size(self):
+        return (224, 224)
