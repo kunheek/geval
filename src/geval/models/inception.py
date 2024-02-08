@@ -187,7 +187,7 @@ class InceptionV3(nn.Module):
                 x = block(x)                                # N x 1000
                 x = F.softmax(x, dim=1)
             if idx in self.output_blocks:
-                if self.sinception:   
+                if self.sinception:
                     x = x[:, :7].flatten(start_dim=1)
                 outp.append(x)
 
@@ -401,7 +401,7 @@ class InceptionEncoder(Encoder):
 
         if sinception: dims=768
         if ckpt is None:
-            # Use Inception from pytorch-fid 
+            # Use Inception from pytorch-fid
             block_idx = InceptionV3.BLOCK_INDEX_BY_DIM[dims]
             self.model = InceptionV3([block_idx], sinception=sinception)
         else:
@@ -410,13 +410,26 @@ class InceptionEncoder(Encoder):
         self.clean_resize = clean_resize
 
     def transform(self, image):
-        if self.clean_resize: 
+        if self.clean_resize:
             image = pil_resize(image, (299, 299))
         else:
             image = F.interpolate(TF.to_tensor(image).unsqueeze(0),
                               size=(299, 299),
                               mode='bilinear',
                               align_corners=False).squeeze()
+        return image
+
+    def transform_tensor(self, image, normalize=True):
+        H = image.shape[-2]
+        W = image.shape[-1]
+        if H != 299 or W != 299:
+            image = F.interpolate(
+                image, size=(299, 299), mode='bicubic', align_corners=False,
+            )
+        if normalize:
+            imagenet_mean = np.array([0.485, 0.456, 0.406])
+            imagenet_std = np.array([0.229, 0.224, 0.225])
+            image = TF.functional.normalize(image, imagenet_mean, imagenet_std)
         return image
 
     def get_label(self, features):
