@@ -6,6 +6,7 @@ import torch.nn.functional as F
 from torchvision import transforms
 
 from .dataloaders import get_dataloader
+from .download import download
 from .models import load_encoder
 from .representations import get_representations
 
@@ -19,10 +20,10 @@ def compute_reps_from_path(
         device=torch.device("cpu"),
         clean_resize=False,
         depth=0,
-        cache_dir="~/.cache/geval",
+        cache_dir=".cache/geval",
 ):
     basename = os.path.basename(path)
-    cachename = f"{basename}_{image_size}_{model_name}_{depth}"
+    cachename = f"{basename}_{image_size}_{model_name}_depth{depth}"
     if clean_resize:
         cachename += "_clean"
     cache_path = os.path.join(cache_dir, f"{cachename}.npz")
@@ -36,11 +37,11 @@ def compute_reps_from_path(
                          depth=depth)
     model.eval()
 
-    num_workers = 4
     transform = transforms.Compose([
         transforms.Resize(image_size, transforms.InterpolationMode.BICUBIC),
         transforms.Lambda(lambda x: model.transform(x)),
     ])
+    num_workers = 4
     DL = get_dataloader(path, -1, batch_size, num_workers, seed=0,
                         sample_w_replacement=False,
                         transform=transform)
@@ -90,6 +91,18 @@ def compute_reps_from_batch(
         pin_memory=False, drop_last=False,
     )
 
+    if model_name in ("inception", "sinception"):
+        interpolation = transforms.InterpolationMode.BILINEAR
+        mean = std = (0.5, 0.5, 0.5)
+    else:
+        interpolation = transforms.InterpolationMode.BICUBIC
+        mean = (0.485, 0.456, 0.406)
+        std = (0.229, 0.224, 0.225)
+    transform = transforms.Compose([
+        transforms.Resize(model.input_size, interpolation),
+        transforms.Normalize(mean, std),
+    ])
+
     pred_arr = []
     # for idx in range(0, batch.shape[0], batch_size):
     for minibatch in dataloader:
@@ -99,7 +112,7 @@ def compute_reps_from_batch(
         if isinstance(minibatch, (list, tuple)):
             minibatch = minibatch[0]
         minibatch = minibatch.to(device)
-        minibatch = model.transform_tensor(minibatch, normalize=True)
+        minibatch = transform(minibatch)
         pred = model(minibatch)
 
         if not torch.is_tensor(pred):  # Some encoders output tuples or lists
@@ -120,3 +133,23 @@ def compute_reps_from_batch(
 
     pred_arr = np.concatenate(pred_arr, axis=0)
     return pred_arr
+
+
+def get_precomputed_reps(
+        dataset,
+        image_size,
+        model_name='dinov2',
+        clean_resize=False,
+        depth=0,
+        cache_dir=".cache/geval",
+):
+    npzpath = download(
+        dataset,
+        image_size,
+        model_name,
+        clean_resize,
+        depth,
+        cache_dir,
+    )
+    reps = np.load(npzpath)["reps"]
+    return reps

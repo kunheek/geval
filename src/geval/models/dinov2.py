@@ -11,13 +11,13 @@
 
 import numpy as np
 import torch
-import torchvision.transforms as TF
+import torchvision.transforms.functional as TF
 
 import sys
 
 from .encoder import Encoder
 
-from ..resizer import pil_resize
+from ..resize import pil_resize
 
 VALID_ARCHITECTURES = [
                         'vits14',
@@ -28,7 +28,7 @@ VALID_ARCHITECTURES = [
 
 class DINOv2Encoder(Encoder):
     def setup(self, arch=None, clean_resize:bool=False):
-        if arch is None: 
+        if arch is None:
             arch = 'vitl14'
 
         self.arch = arch
@@ -42,19 +42,15 @@ class DINOv2Encoder(Encoder):
         self.clean_resize = clean_resize
 
     def transform(self, image):
-
-        imagenet_mean = np.array([0.485, 0.456, 0.406])
-        imagenet_std = np.array([0.229, 0.224, 0.225])
-
         if self.clean_resize:
             image = pil_resize(image, (224, 224))
         else:
-            image = TF.Compose([
-                TF.Resize((224, 224), TF.InterpolationMode.BICUBIC),
-                TF.ToTensor(),
-            ])(image)
+            image = TF.resize(image, (224, 224), TF.InterpolationMode.BICUBIC)
+            image = TF.to_tensor(image)
 
-        return TF.Normalize(imagenet_mean, imagenet_std)(image)
+        imagenet_mean = np.array([0.485, 0.456, 0.406])
+        imagenet_std = np.array([0.229, 0.224, 0.225])
+        return TF.normalize(image, mean=imagenet_mean, std=imagenet_std)
 
     @property
     def input_size(self):

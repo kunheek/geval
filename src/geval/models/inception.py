@@ -1,23 +1,22 @@
+import os
+
 import numpy as np
+import timm
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
-import timm
 import yaml
-import os
 
 try:
     from torchvision.models.utils import load_state_dict_from_url
 except ImportError:
     from torch.utils.model_zoo import load_url as load_state_dict_from_url
-from torchvision import transforms
+
 import torchvision.transforms.functional as TF
 
-
+from ..resize import pil_resize
 from .encoder import Encoder
-
-from ..resizer import pil_resize
 
 # Inception weights ported to Pytorch from
 # http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz
@@ -52,7 +51,7 @@ class InceptionV3(nn.Module):
     def __init__(self,
                  output_blocks=(DEFAULT_BLOCK_INDEX,),
                  resize_input=True,
-                 normalize_input=True,
+                 normalize_input=False,
                  requires_grad=False,
                  use_fid_inception=True,
                  sinception=False):
@@ -371,9 +370,9 @@ class FIDInceptionE_2(torchvision.models.inception.InceptionE):
 class TimmInception(nn.Module):
     def __init__(self, ckpt,
                 resize_input=True,
-                normalize_input=True,
+                normalize_input=False,
                 ):
-        super(TimmInception, self).__init__()
+        super().__init__()
 
         self.resize_input = resize_input
         self.normalize_input = normalize_input
@@ -387,18 +386,17 @@ class TimmInception(nn.Module):
         self.model = torch.nn.Sequential(*(list(self.model.children())[:-1]))
 
     def forward(self, inp):
-
         x = inp
         if self.normalize_input:
             x = 2 * x - 1  # Scale from range (0, 1) to range (-1, 1)
         return self.model(x)
+
 
 class InceptionEncoder(Encoder):
 
     BLOCK_INDEX_BY_DIM = InceptionV3.BLOCK_INDEX_BY_DIM
 
     def setup(self, dims=2048, ckpt=None, clean_resize=False, sinception=False):
-
         if sinception: dims=768
         if ckpt is None:
             # Use Inception from pytorch-fid
@@ -411,13 +409,16 @@ class InceptionEncoder(Encoder):
 
     def transform(self, image):
         if self.clean_resize:
-            image = pil_resize(image, (299, 299))
+            image = pil_resize(image, self.input_size)
         else:
-            image = F.interpolate(TF.to_tensor(image).unsqueeze(0),
-                              size=(299, 299),
-                              mode='bilinear',
-                              align_corners=False).squeeze()
-        return image
+            image = TF.to_tensor(image).unsqueeze(0)
+            image = F.interpolate(image,
+                                  size=self.input_size,
+                                  mode='bilinear',
+                                  align_corners=False)
+            image = image.squeeze()
+        mean = std = (0.5, 0.5, 0.5)
+        return TF.normalize(image, mean=mean, std=std) 
 
     @property
     def input_size(self):

@@ -1,11 +1,10 @@
-import torch
 import open_clip
-from torchvision.transforms import Normalize, InterpolationMode
+import torch
 import torchvision.transforms.functional as TF
-from torch.utils.checkpoint import checkpoint
+from torchvision.transforms import InterpolationMode
 
+from ..resize import pil_resize
 from .encoder import Encoder
-from ..resizer import pil_resize
 
 ARCH_WEIGHT_DEFAULTS = {
     'ViT-B-32': 'laion2b_s34b_b79k',
@@ -13,6 +12,8 @@ ARCH_WEIGHT_DEFAULTS = {
     'ViT-L-14': 'datacomp_xl_s13b_b90k',
     'ViT-bigG-14': 'laion2b_s39b_b160k',
 }
+
+
 class CLIPEncoder(Encoder):
     def setup(self, arch:bool=None, pretrained_weights:bool=None, clean_resize:bool=False, depth:int=0):
 
@@ -35,7 +36,7 @@ class CLIPEncoder(Encoder):
             image = TF.resize(image, size, interpolation=InterpolationMode.BICUBIC).convert('RGB')
             image = TF.to_tensor(image)
         image  = TF.center_crop(image, size)
-        return Normalize(mean, std)(image)
+        return TF.normalize(image, mean=mean, std=std)
 
     def forward(self, x: torch.Tensor):
         x = self.model.visual.conv1(x)  # shape = [*, width, grid, grid]

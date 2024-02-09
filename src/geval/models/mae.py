@@ -20,7 +20,7 @@ import torch.nn.functional as F
 import timm.models.vision_transformer
 
 from .encoder import Encoder
-from ..resizer import pil_resize
+from ..resize import pil_resize
 from .util.pos_embed import interpolate_pos_embed
 import sys
 

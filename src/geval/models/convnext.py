@@ -1,15 +1,14 @@
-import open_clip
-from torchvision import transforms
-from torchvision.transforms import Normalize, Compose, InterpolationMode, ToTensor, Resize, CenterCrop
-import torchvision.transforms.functional as TF
-
-from .encoder import Encoder
-from ..resizer import pil_resize
-from timm.models import create_model
-from timm.data.constants import \
-    IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD, IMAGENET_INCEPTION_MEAN, IMAGENET_INCEPTION_STD, \
-    OPENAI_CLIP_MEAN, OPENAI_CLIP_STD
 import sys
+
+import torchvision.transforms.functional as TF
+from timm.data.constants import (IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD,
+                                 IMAGENET_INCEPTION_MEAN,
+                                 IMAGENET_INCEPTION_STD, OPENAI_CLIP_MEAN,
+                                 OPENAI_CLIP_STD)
+from timm.models import create_model
+from torchvision import transforms
+from .encoder import Encoder
+
 
 class ConvNeXTEncoder(Encoder):
     """

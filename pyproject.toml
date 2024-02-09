@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "G-eval"
 version = "0.1.0"  # Set an appropriate version number
 dependencies = [
-  "numpy>=1.26.3",
+  "numpy",
   "opencv-python-headless>=4.6.0",
   "open_clip_torch>=2.19.0",
   "pandas>=1.5.3",
@@ -18,8 +18,9 @@ dependencies = [
   "torchvision>=0.15.0",
   "transformers>=4.26.0",
   "xformers",
+  "huggingface",
 ]
-requires-python = ">=3.8, <=3.11"
+requires-python = ">=3.8.0, <3.12.0"
 authors = [
   {name = "Kunhee Kim", email = "kunhee.kim@kaist.ac.kr"},
   {name = "NaHyeon Park", email = "julia19@kaist.ac.kr"},
