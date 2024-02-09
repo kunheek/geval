@@ -8,6 +8,8 @@ STATS = (
     "cifar10-train_32_dinov2_depth0",
     "celeba-test_64_inception_depth0",
     "celeba-test_64_dinov2_depth0",
+    "ffhq_64_inception_depth0",
+    "ffhq_64_dinov2_depth0",
 )
 
 
