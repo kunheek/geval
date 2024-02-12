@@ -8,9 +8,10 @@ import numpy as np
 import pandas as pd
 import torch
 
+from geval import download, metrics, script_util
+
 from .dataloaders import get_dataloader
 from .heatmaps import visualize_heatmaps
-from .metrics import *
 from .models import MODELS, load_encoder
 from .representations import (get_representations, load_reps_from_path,
                               save_outputs)
@@ -18,6 +19,9 @@ from .representations import (get_representations, load_reps_from_path,
 parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
 
 parser.add_argument('--model', type=str, default='dinov2', choices=MODELS.keys(),
+                    help='Model to use for generating feature representations.')
+
+parser.add_argument('--image-size', type=int,
                     help='Model to use for generating feature representations.')
 
 parser.add_argument('--train_dataset', type=str, default='imagenet',
@@ -49,7 +53,7 @@ parser.add_argument('--test_path', type=str, default=None,
                     help=('Path to test images'))
 
 parser.add_argument('--metrics', type=str, nargs='+', default=['fd', 'fd-infinity', 'kd', 'prdc',
-                                                               'is', 'authpct', 'ct', 'ct_test', 'ct_modified', 
+                                                               'is', 'authpct', 'ct', 'ct_test', 'ct_modified',
                                                                'fls', 'fls_overfit', 'vendi', 'sw_approx'],
                     help="metrics to compute")
 
@@ -127,7 +131,7 @@ def compute_representations(DL, model, device, args):
     if args.load:
         print(f'Loading saved representations from: {args.output_dir}\n', file=sys.stderr)
         repsi = load_reps_from_path(args.output_dir, args.model, None, DL)
-        if repsi is not None: 
+        if repsi is not None:
             return repsi
 
         print(f'No saved representations found: {args.output_dir}\n', file=sys.stderr)
@@ -147,19 +151,19 @@ def compute_scores(args, reps, test_reps, labels=None):
 
     if 'fd' in args.metrics:
         print("Computing FD \n", file=sys.stderr)
-        scores['fd'] = compute_FD_with_reps(*reps)
+        scores['fd'] = metrics.compute_FD_with_reps(*reps)
 
     if 'fd_eff' in args.metrics:
         print("Computing Efficient FD \n", file=sys.stderr)
-        scores['fd_eff'] = compute_efficient_FD_with_reps(*reps)
+        scores['fd_eff'] = metrics.compute_efficient_FD_with_reps(*reps)
 
     if 'fd-infinity' in args.metrics:
         print("Computing fd-infinity \n", file=sys.stderr)
-        scores['fd_infinity_value'] = compute_FD_infinity(*reps)
+        scores['fd_infinity_value'] = metrics.compute_FD_infinity(*reps)
 
     if 'kd' in args.metrics:
         print("Computing KD \n", file=sys.stderr)
-        mmd_values = compute_mmd(*reps)
+        mmd_values = metrics.compute_mmd(*reps)
         scores['kd_value'] = mmd_values.mean()
         scores['kd_variance'] = mmd_values.std()
 
@@ -174,9 +178,9 @@ def compute_scores(args, reps, test_reps, labels=None):
             # Else filenames and realism scores will not align
             inds1 = np.random.choice(inds1, min(inds1.shape[0], reduced_n), replace=False)
 
-        prdc_dict = compute_prdc(
-            reps[0][inds0], 
-            reps[1][inds1], 
+        prdc_dict = metrics.compute_prdc(
+            reps[0][inds0],
+            reps[1][inds1],
             nearest_k=args.nearest_k,
             realism=True if 'realism' in args.metrics else False)
         scores = dict(scores, **prdc_dict)
@@ -184,28 +188,28 @@ def compute_scores(args, reps, test_reps, labels=None):
     if 'vendi' in args.metrics:
         print("Calculating diversity score", file=sys.stderr)
         # scores['vendi'] = compute_vendi_score(reps[1])
-        vendi_scores = compute_per_class_vendi_scores(reps[1], labels)
+        vendi_scores = metrics.compute_per_class_vendi_scores(reps[1], labels)
         scores['mean vendi per class'] = vendi_scores.mean()
 
     if 'authpct' in args.metrics:
         print("Computing authpct \n", file=sys.stderr)
-        scores['authpct'] = compute_authpct(*reps)
+        scores['authpct'] = metrics.compute_authpct(*reps)
 
     if 'sw_approx' in args.metrics:
         print('Aprroximating Sliced W2.', file=sys.stderr)
-        scores['sw_approx'] = sw_approx(*reps)
+        scores['sw_approx'] = metrics.sw_approx(*reps)
 
     if 'ct' in args.metrics:
         print("Computing ct score \n", file=sys.stderr)
-        scores['ct'] = compute_CTscore(reps[0], test_reps, reps[1])
+        scores['ct'] = metrics.compute_CTscore(reps[0], test_reps, reps[1])
 
     if 'ct_test' in args.metrics:
         print("Computing ct score, modified to identify mode collapse only \n", file=sys.stderr)
-        scores['ct_test'] = compute_CTscore_mode(reps[0], test_reps, reps[1])
+        scores['ct_test'] = metrics.compute_CTscore_mode(reps[0], test_reps, reps[1])
 
     if 'ct_modified' in args.metrics:
         print("Computing ct score, modified to identify memorization only \n", file=sys.stderr)
-        scores['ct_modified'] = compute_CTscore_mem(reps[0], test_reps, reps[1])
+        scores['ct_modified'] = metrics.compute_CTscore_mem(reps[0], test_reps, reps[1])
 
     if 'fls' in args.metrics or 'fls_overfit' in args.metrics:
         train_reps, gen_reps = reps[0], reps[1]
@@ -220,9 +224,9 @@ def compute_scores(args, reps, test_reps, labels=None):
         train_reps, baseline_reps = train_reps[:reduced_n], train_reps[reduced_n:]
 
         if 'fls' in args.metrics:
-            scores['fls'] = compute_fls(train_reps, baseline_reps, test_reps, gen_reps)
+            scores['fls'] = metrics.compute_fls(train_reps, baseline_reps, test_reps, gen_reps)
         if 'fls_overfit' in args.metrics:
-            scores['fls_overfit'] = compute_fls_overfit(train_reps, baseline_reps, test_reps, gen_reps)
+            scores['fls_overfit'] = metrics.compute_fls_overfit(train_reps, baseline_reps, test_reps, gen_reps)
 
     for key, value in scores.items():
         if key=='realism': continue
@@ -262,7 +266,7 @@ def save_scores(scores, args, is_only=False, vendi_scores={}):
     ckpt_str = ''
     print(scores, file=sys.stderr)
 
-    if is_only: 
+    if is_only:
         out_str = f'Inception_scores_nimage-{args.nsample}'
     else:
         out_str = f"{args.model}{ckpt_str}_scores_nimage-{args.nsample}"
@@ -290,12 +294,12 @@ def get_inception_scores(args, device, num_workers):
                         train_dataset=None,
                         clean_resize=args.clean_resize,
                         depth=args.depth)
-    
+
     for i, path in enumerate(args.path[1:]):
         print(f'Getting DataLoader for path: {path}\n', file=sys.stderr)
         dataloaderi = get_dataloader_from_path(args.path[i], model_IS.transform, num_workers, args)
         print(f'Computing inception score for {path}\n', file=sys.stderr)
-        IS_score_i = compute_inception_score(model_IS, DataLoader=dataloaderi, splits=args.splits, device=device)
+        IS_score_i = metrics.compute_inception_score(model_IS, DataLoader=dataloaderi, splits=args.splits, device=device)
         IS_scores[f'run{i:02d}'] = IS_score_i
         print(IS_score_i)
     save_scores(IS_scores, args, is_only=True)
@@ -313,16 +317,18 @@ def main():
     if 'is' in args.metrics and args.model == 'inception':
         # Does not require a reference dataset, so compute first.
         IS_scores = get_inception_scores(args, device, num_workers)
-       
+
     print('Loading Model', file=sys.stderr)
     # Get train representations
     model = load_encoder(args.model, device, ckpt=None, arch=None,
                         clean_resize=args.clean_resize,
                         sinception=True if args.model=='sinception' else False,
-                        depth=args.depth,
-                        )
-    dataloader_real = get_dataloader_from_path(args.path[0], model.transform, num_workers, args)
-    reps_real = compute_representations(dataloader_real, model, device, args)
+                        depth=args.depth)
+    if download.available(args.path[0], args.image_size, args.model):
+        reps_real = script_util.get_precomputed_reps(args.path[0], args.image_size, args.model)
+    else:
+        dataloader_real = get_dataloader_from_path(args.path[0], model.transform, num_workers, args)
+        reps_real = compute_representations(dataloader_real, model, device, args)
 
     # Get test representations
     repsi_test = None

@@ -13,6 +13,23 @@ STATS = (
 )
 
 
+def get_filename(dataset, image_size, model_name, depth, clean_resize):
+    filename = "_".join([
+        dataset,
+        str(image_size),
+        model_name,
+        f"depth{int(depth)}",
+    ])
+    if clean_resize:
+        filename += "_clean"
+    return filename
+
+
+def available(dataset, image_size, model_name, depth=0, clean_resize=False):
+    filename = get_filename(dataset, image_size, model_name, depth, clean_resize)
+    return filename in STATS
+
+
 def download(
         dataset,
         image_size,
@@ -22,14 +39,7 @@ def download(
         cache_dir=".cache/geval",
 ):
     repo_id = "kunheekim/geval"
-    filename = "_".join([
-        dataset,
-        str(image_size),
-        model_name,
-        f"depth{int(depth)}",
-    ])
-    if clean_resize:
-        filename += "_clean"
+    filename = get_filename(dataset, image_size, model_name, depth, clean_resize)
     if filename not in STATS:
         msg = f"Unknown stats: {filename}. Available stats: {STATS}"
         raise ValueError(msg)
