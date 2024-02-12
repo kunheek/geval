@@ -10,6 +10,8 @@ STATS = (
     "celeba-test_64_dinov2_depth0",
     "ffhq_64_inception_depth0",
     "ffhq_64_dinov2_depth0",
+    "ffhq_256_inception_depth0",
+    "ffhq_256_dinov2_depth0",
 )
 
 
