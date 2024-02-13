@@ -12,6 +12,8 @@ except ImportError:
     def tqdm(x):
         return x
 
+
+@torch.no_grad()
 def get_representations(model, DataLoader, device, normalized=False):
     """Extracts features from all images in DataLoader given model.
 
@@ -46,11 +48,10 @@ def get_representations(model, DataLoader, device, normalized=False):
 
         batch = batch.to(device)
 
-        with torch.no_grad():
-            pred = model(batch)
+        pred = model(batch)
 
-            if not torch.is_tensor(pred): # Some encoders output tuples or lists
-                pred = pred[0]
+        if not torch.is_tensor(pred): # Some encoders output tuples or lists
+            pred = pred[0]
 
         # If model output is not scalar, apply global spatial average pooling.
         # This happens if you choose a dimensionality not equal 2048.

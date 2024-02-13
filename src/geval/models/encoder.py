@@ -24,3 +24,13 @@ class Encoder(ABC, nn.Module):
     @abstractmethod
     def input_size(self):
         pass
+
+    @property
+    @abstractmethod
+    def mean(self):
+        pass
+
+    @property
+    @abstractmethod
+    def std(self):
+        pass

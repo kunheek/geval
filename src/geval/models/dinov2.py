@@ -43,15 +43,21 @@ class DINOv2Encoder(Encoder):
 
     def transform(self, image):
         if self.clean_resize:
-            image = pil_resize(image, (224, 224))
+            image = pil_resize(image, self.input_size)
         else:
-            image = TF.resize(image, (224, 224), TF.InterpolationMode.BICUBIC)
+            image = TF.resize(image, self.input_size, TF.InterpolationMode.BICUBIC)
             image = TF.to_tensor(image)
 
-        imagenet_mean = np.array([0.485, 0.456, 0.406])
-        imagenet_std = np.array([0.229, 0.224, 0.225])
-        return TF.normalize(image, mean=imagenet_mean, std=imagenet_std)
+        return TF.normalize(image, mean=self.mean, std=self.std)
 
     @property
     def input_size(self):
         return (224, 224)
+
+    @property
+    def mean(self):
+        return (0.485, 0.456, 0.406)
+
+    @property
+    def std(self):
+        return (0.229, 0.224, 0.225)

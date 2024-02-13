@@ -369,9 +369,8 @@ class FIDInceptionE_2(torchvision.models.inception.InceptionE):
 
 class TimmInception(nn.Module):
     def __init__(self, ckpt,
-                resize_input=True,
-                normalize_input=False,
-                ):
+                 resize_input=True,
+                 normalize_input=False):
         super().__init__()
 
         self.resize_input = resize_input
@@ -397,7 +396,8 @@ class InceptionEncoder(Encoder):
     BLOCK_INDEX_BY_DIM = InceptionV3.BLOCK_INDEX_BY_DIM
 
     def setup(self, dims=2048, ckpt=None, clean_resize=False, sinception=False):
-        if sinception: dims=768
+        if sinception:
+            dims=768
         if ckpt is None:
             # Use Inception from pytorch-fid
             block_idx = InceptionV3.BLOCK_INDEX_BY_DIM[dims]
@@ -417,12 +417,47 @@ class InceptionEncoder(Encoder):
                                   mode='bilinear',
                                   align_corners=False)
             image = image.squeeze()
-        mean = std = (0.5, 0.5, 0.5)
-        return TF.normalize(image, mean=mean, std=std) 
+        return TF.normalize(image, mean=self.mean, std=self.std) 
 
     @property
     def input_size(self):
         return (299, 299)
 
+    @property
+    def mean(self):
+        return (0.5, 0.5, 0.5)
+
+    @property
+    def std(self):
+        return (0.5, 0.5, 0.5)
+
     def get_label(self, features):
         return self.model.get_label(features)
+
+
+class TfInceptionEncoder(Encoder):
+    def setup(self, dims=2048, ckpt=None, clean_resize=False, sinception=False):
+        from cleanfid import features
+        mode = "clean" if clean_resize else "legacy_tensorflow"
+        self.model = features.build_feature_extractor(mode)
+        self.clean_resize = clean_resize
+
+    def transform(self, image):
+        if self.clean_resize:
+            image = pil_resize(image, self.input_size)
+            return TF.normalize(image, mean=self.mean, std=self.std) 
+        else:
+            image = TF.to_tensor(image)
+            return image
+
+    @property
+    def input_size(self):
+        return (299, 299)
+
+    @property
+    def mean(self):
+        return (0.5, 0.5, 0.5)
+
+    @property
+    def std(self):
+        return (0.5, 0.5, 0.5)

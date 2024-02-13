@@ -14,7 +14,7 @@ from .representations import get_representations
 @torch.no_grad()
 def compute_reps_from_path(
         path,
-        image_size,
+        image_size=None,
         model_name='dinov2',
         batch_size=256,
         device=torch.device("cpu"),
@@ -33,14 +33,19 @@ def compute_reps_from_path(
 
     model = load_encoder(model_name, device, ckpt=None, arch=None,
                          clean_resize=clean_resize,
-                         sinception=(model_name == 'sinception'),
+                         sinception=(model_name=='sinception'),
                          depth=depth)
     model.eval()
 
-    transform = transforms.Compose([
-        transforms.Resize(image_size, transforms.InterpolationMode.BICUBIC),
+    transform_list = []
+    if image_size is not None:
+        transform_list.append(
+            transforms.Resize(image_size, transforms.InterpolationMode.BICUBIC),
+        )
+    transform_list.append(
         transforms.Lambda(lambda x: model.transform(x)),
-    ])
+    )
+    transform = transforms.Compose(transform_list)
     num_workers = 4
     DL = get_dataloader(path, -1, batch_size, num_workers, seed=0,
                         sample_w_replacement=False,
