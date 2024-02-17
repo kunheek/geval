@@ -76,13 +76,19 @@ def compute_reps_from_batch(
         normalized=False,
 ):
     assert batch.dim() in (3, 4), batch.shape
-    assert batch.min() >= 0 and batch.max() <= 1, f"{batch.min()}, {batch.max()}"
+    if batch.dim() == 3:
+        batch = batch.unsqueeze(0)
+
+    if batch.dtype == torch.uint8:
+        assert batch.shape[-1] in (1, 3), batch.shape
+        batch = batch.float() / 255.0
+        batch = batch.permute(0, 3, 1, 2)  # NHWC -> NCHW
 
     # Convert grayscale to RGB
-    if batch.ndim == 3:
-        batch.unsqueeze_(1)
     if batch.shape[1] == 1:
         batch = batch.repeat(1, 3, 1, 1)
+
+    assert batch.min() >= 0 and batch.max() <= 1, f"{batch.min()}, {batch.max()}"
 
     model = load_encoder(model_name, device, ckpt=None, arch=None,
                          clean_resize=clean_resize,

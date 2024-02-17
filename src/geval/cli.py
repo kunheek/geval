@@ -321,11 +321,12 @@ def main():
     print('Loading Model', file=sys.stderr)
     # Get train representations
     model = load_encoder(args.model, device, ckpt=None, arch=None,
-                        clean_resize=args.clean_resize,
-                        sinception=True if args.model=='sinception' else False,
-                        depth=args.depth)
-    if download.available(args.path[0], args.image_size, args.model):
-        reps_real = script_util.get_precomputed_reps(args.path[0], args.image_size, args.model)
+                         clean_resize=args.clean_resize,
+                         sinception=True if args.model=='sinception' else False,
+                         depth=args.depth)
+    if download.available(args.path[0], args.image_size, args.model, args.clean_resize):
+        reps_real = script_util.get_precomputed_reps(
+            args.path[0], args.image_size, args.model, args.clean_resize)
     else:
         dataloader_real = get_dataloader_from_path(args.path[0], model.transform, num_workers, args)
         reps_real = compute_representations(dataloader_real, model, device, args)
@@ -341,7 +342,6 @@ def main():
     all_scores = {}
     vendi_scores = {}
     for i, path in enumerate(args.path[1:]):
-
         dataloaderi = get_dataloader_from_path(path, model.transform, num_workers, args,
                                                sample_w_replacement=True if ':train' in path else False)
         repsi = compute_representations(dataloaderi, model, device, args)
