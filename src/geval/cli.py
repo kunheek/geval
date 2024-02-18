@@ -327,18 +327,19 @@ def main():
                          clean_resize=args.clean_resize,
                          sinception=True if args.model=='sinception' else False,
                          depth=args.depth)
-    if download.available(args.path[0], args.image_size, args.model, args.clean_resize):
-        reps_real = script_util.get_precomputed_reps(
-            args.path[0], args.image_size, args.model, args.clean_resize)
-    else:
+
+    # Get reference representations
+    npzpath = download.download(args.path[0], args.image_size, args.model, args.clean_resize)
+    if not npzpath:
         dataloader_real = get_dataloader_from_path(args.path[0], model.transform, num_workers, args)
         reps_real = compute_representations(dataloader_real, model, device, args)
+    else:
+        reps_real = np.load(npzpath)['reps']
 
     # Get test representations
     repsi_test = None
     if args.test_path is not None:
         dataloader_test = get_dataloader_from_path(args.test_path, model.transform, num_workers, args)
-
         repsi_test = compute_representations(dataloader_test, model, device, args)
 
     # Loop over all generated paths
