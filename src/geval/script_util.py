@@ -35,7 +35,6 @@ def compute_reps_from_path(
                          clean_resize=clean_resize,
                          sinception=(model_name=='sinception'),
                          depth=depth)
-    model.eval()
 
     transform_list = []
     if image_size is not None:
@@ -74,15 +73,18 @@ def compute_reps_from_batch(
         clean_resize=False,
         depth=0,
         normalized=False,
+        data_format="NCHW",
 ):
+    assert data_format in {"NCHW", "NHWC"}
     assert batch.dim() in (3, 4), batch.shape
     if batch.dim() == 3:
         batch = batch.unsqueeze(0)
 
+    if data_format == "NHWC":
+        batch = batch.permute(0, 2, 3, 1).contiguous()
+
     if batch.dtype == torch.uint8:
-        assert batch.shape[-1] in (1, 3), batch.shape
         batch = batch.float() / 255.0
-        batch = batch.permute(0, 3, 1, 2)  # NHWC -> NCHW
 
     # Convert grayscale to RGB
     if batch.shape[1] == 1:

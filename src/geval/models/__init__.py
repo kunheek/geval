@@ -40,4 +40,4 @@ def load_encoder(model_name, device, **kwargs):
 
     assert isinstance(encoder, Encoder), "Can only get representations with Encoder subclasses!"
 
-    return encoder.to(device)
+    return encoder.eval().to(device)

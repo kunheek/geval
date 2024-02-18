@@ -15,6 +15,7 @@ def compute_inception_score(model, DataLoader=None, splits=10, device=None):
     score['inception std'] = std
     return score
 
+
 def get_preds(model, DataLoader, device):
     model.eval()
     start_idx = 0
@@ -48,6 +49,7 @@ def get_preds(model, DataLoader, device):
 
         start_idx = start_idx + pred.shape[0]
     return pred_arr
+
 
 def calculate_score(preds, splits=10, N=50000, shuffle=True, rng_seed=2020):
     if shuffle:

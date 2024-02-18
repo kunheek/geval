@@ -92,7 +92,6 @@ def compute_efficient_FD_with_reps(reps1, reps2):
     return ((mu1 - mu2)**2).sum() + sigma1.trace() + sigma2.trace() - 2 * sqrt_trace
 
 
-
 def compute_FD_infinity(reps1, reps2, num_points=15):
     '''
     reps1:
@@ -110,7 +109,7 @@ def compute_FD_infinity(reps1, reps2, num_points=15):
     fd_batches = np.linspace(min(5000, max(len(reps2)//10, 2)), len(reps2), num_points).astype('int32')
     mu1, sigma1 = compute_statistics(reps1)
 
-    pbar = tqdm(total=num_points, desc='FID-infinity batches')
+    pbar = tqdm(total=num_points, desc='FD-infinity batches')
     # Evaluate FD_N
     rng = np.random.default_rng()
     for fd_batch_size in fd_batches:

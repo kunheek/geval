@@ -311,6 +311,9 @@ def get_inception_scores(args, device, num_workers):
 def main():
     args = parser.parse_args()
 
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+
     device, num_workers = get_device_and_num_workers(args.device, args.num_workers)
 
     IS_scores = None
