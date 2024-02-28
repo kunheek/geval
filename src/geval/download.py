@@ -25,16 +25,18 @@ def download(
 ):
     filename = get_filename(dataset, image_size, model_name, depth, clean_resize)
     filename = filename + ".npz"
+    res = False
 
     try:
         repo_id = "kunheekim/geval"
         hf_hub_download(repo_id, filename, local_dir=cache_dir)
         res = os.path.join(cache_dir, filename)
     except:
+        print("Not found in kunheekim/geval")
+    try:
         repo_id = "nahyeonkaty/geval"
         hf_hub_download(repo_id, filename, local_dir=cache_dir)
         res = os.path.join(cache_dir, filename)
-    else:
-        print("Failed to download from Hugging Face Hub.")
-        res = False
+    except:
+        print("Not found in nahyeonkaty/geval")
     return res
