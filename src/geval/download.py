@@ -23,14 +23,17 @@ def download(
         depth=0,
         cache_dir=".cache/geval",
 ):
-    repo_id = "kunheekim/geval"
     filename = get_filename(dataset, image_size, model_name, depth, clean_resize)
     filename = filename + ".npz"
 
     try:
+        repo_id = "kunheekim/geval"
         hf_hub_download(repo_id, filename, local_dir=cache_dir)
         return os.path.join(cache_dir, filename)
-    except Exception as e:
-        print(e)
+    except:
+        repo_id = "nahyeonkatie/geval"
+        hf_hub_download(repo_id, filename, local_dir=cache_dir)
+        return os.path.join(cache_dir, filename)
+    finally:
         print("Failed to download from Hugging Face Hub.")
         return False
