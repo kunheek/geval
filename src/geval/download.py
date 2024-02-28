@@ -31,7 +31,7 @@ def download(
         hf_hub_download(repo_id, filename, local_dir=cache_dir)
         return os.path.join(cache_dir, filename)
     except:
-        repo_id = "nahyeonkatie/geval"
+        repo_id = "nahyeonkaty/geval"
         hf_hub_download(repo_id, filename, local_dir=cache_dir)
         return os.path.join(cache_dir, filename)
     finally:
