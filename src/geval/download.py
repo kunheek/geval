@@ -29,11 +29,12 @@ def download(
     try:
         repo_id = "kunheekim/geval"
         hf_hub_download(repo_id, filename, local_dir=cache_dir)
-        return os.path.join(cache_dir, filename)
+        res = os.path.join(cache_dir, filename)
     except:
         repo_id = "nahyeonkaty/geval"
         hf_hub_download(repo_id, filename, local_dir=cache_dir)
-        return os.path.join(cache_dir, filename)
-    finally:
+        res = os.path.join(cache_dir, filename)
+    else:
         print("Failed to download from Hugging Face Hub.")
-        return False
+        res = False
+    return res
