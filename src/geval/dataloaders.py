@@ -15,10 +15,10 @@ TORCHVISION_DATA_PATH = './data/'
 
 def get_files_at_path(path):
     """Return list of all files at path of type IMAGE_EXTENSIONS"""
- 
-    files = sorted([file for ext in IMAGE_EXTENSIONS
-                    for file in path.glob(f'*.{ext}')])
-
+    files = []
+    for file in path.glob('*'):
+        if file.is_file() and file.suffix[1:].lower() in IMAGE_EXTENSIONS:
+            files.append(file)
     return files
 
 
@@ -172,8 +172,9 @@ class DataLoader:
         """
         self.nimages = len(self.data_set) 
         if self.batch_size > self.nimages:
-            print(('Warning: batch size is bigger than the data size. '
-                   'Setting batch size to data size'))
+            print(f'Warning: batch size {self.batch_size} '
+                  f'is bigger than the data size {self.nimages}. '
+                  'Setting batch size to data size')
             self.batch_size = self.nimages
 
         self.data_loader = torch.utils.data.DataLoader(self.data_set,
@@ -193,7 +194,7 @@ def get_dataloader(path, nsample=-1, batch_size=32, num_workers=1, transform=Non
         # e.g. CIFAR10:train, MNIST:test, etc.
         path, train_str = path.split(':')
 
-    train_set = True if train_str.upper() =='TRAIN' else False
+    train_set = True if train_str.upper()=='TRAIN' else False
 
     DL = DataLoader(path, train_set=train_set, nsample=nsample,
                     batch_size=batch_size, num_workers=num_workers,
