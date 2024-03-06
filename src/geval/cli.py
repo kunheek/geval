@@ -276,7 +276,7 @@ def save_scores(scores, args, is_only=False, vendi_scores={}, fname=None):
     else:
         out_str = f"{args.model}{ckpt_str}_scores_nimage-{args.nsample}"
     out_path = os.path.join(args.output_dir, out_str)
-
+    os.makedirs(args.output_dir, exist_ok=True)
     np.savez(f'{out_path}.npz', scores=scores, run_params=run_params)
 
     if vendi_scores is not None and len(vendi_scores)>0:
