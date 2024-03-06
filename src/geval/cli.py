@@ -24,7 +24,7 @@ parser.add_argument('--model', type=str, default='dinov2', choices=MODELS.keys()
 parser.add_argument('--image-size', type=int,
                     help='Model to use for generating feature representations.')
 
-parser.add_argument('--train_dataset', type=str, default='imagenet',
+parser.add_argument('--train-dataset', type=str, default='imagenet',
                     help='Dataset that model was trained on. Sets proper normalization for MAE.')
 
 parser.add_argument('-bs', '--batch_size', type=int, default=50,
@@ -73,6 +73,9 @@ parser.add_argument('--splits', type=int, default=10, help="num of splits for In
 
 parser.add_argument('--output_dir', type=str, default='experiments/',
                     help='Directory to save outputs in')
+
+parser.add_argument('--filename', type=str, default=None,
+                    help='Filename to save scores to')
 
 parser.add_argument('--save', action='store_true',
                     help='Save representations to output_dir')
@@ -255,7 +258,7 @@ def save_score(scores, output_dir, model, path, ckpt, nsample, is_only=False):
             f.write(f"{key}: {value} \n")
 
 
-def save_scores(scores, args, is_only=False, vendi_scores={}):
+def save_scores(scores, args, is_only=False, vendi_scores={}, fname=None):
 
     pathlib.Path(args.output_dir).mkdir(parents=True, exist_ok=True)
 
@@ -268,6 +271,8 @@ def save_scores(scores, args, is_only=False, vendi_scores={}):
 
     if is_only:
         out_str = f'Inception_scores_nimage-{args.nsample}'
+    elif fname is not None:
+        out_str = fname
     else:
         out_str = f"{args.model}{ckpt_str}_scores_nimage-{args.nsample}"
     out_path = os.path.join(args.output_dir, out_str)
@@ -372,7 +377,7 @@ def main():
                                results_suffix=heatmap_suffix, dataset_name=dataloaderi.dataset_name, device=device,
                                perturbation=args.heatmaps_perturbation, random_seed=args.seed)
     # save scores from all generated paths
-    save_scores(all_scores, args, vendi_scores=vendi_scores)
+    save_scores(all_scores, args, vendi_scores=vendi_scores, fname=args.filename)
 
 
 if __name__ == "__main__":
