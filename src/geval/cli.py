@@ -163,7 +163,7 @@ def compute_scores(args, reps, test_reps, labels=None):
 
     if 'kd' in args.metrics:
         print("Computing KD \n", file=sys.stderr)
-        mmd_values = metrics.compute_mmd(*reps)
+        mmd_values = metrics.compute_mmd(*reps) * 1e3
         scores['kd_value'] = mmd_values.mean()
         scores['kd_variance'] = mmd_values.std()
 
