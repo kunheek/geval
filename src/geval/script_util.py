@@ -61,5 +61,8 @@ def get_precomputed_reps(
         depth,
         cache_dir,
     )
-    reps = np.load(npzpath)["feats"]
+    try:
+        reps = np.load(npzpath)["feats"]
+    except:
+        reps = np.load(npzpath)["reps"]
     return reps
