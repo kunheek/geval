@@ -1,7 +1,5 @@
 """From the FLS repo (https://github.com/marcojira/fls)"""
 
-import math
-
 import numpy as np
 import torch
 
@@ -78,6 +76,7 @@ def nll(dists, log_sigmas, dim, lambd=0, detailed=False):
     return final_nll
 
 
+@torch.no_grad()
 def optimize_sigmas(x_data, x_kernel, init_val=1, verbose=False):
     """Find the sigmas that minimize the NLL of x_data under a kernel given by x_kernel
     Args:
@@ -106,14 +105,13 @@ def optimize_sigmas(x_data, x_kernel, init_val=1, verbose=False):
     for i in range(100):
         loss = nll(dists, log_sigmas, dim)
 
-        optim.zero_grad()
+        optim.zero_grad(set_to_none=True)
         loss.backward()
         optim.step()
         scheduler.step()
 
         # Here we clamp log_sigmas to stop values exploding for identical samples
-        with torch.no_grad():
-            log_sigmas.data = log_sigmas.clamp(-100, 20).data
+        log_sigmas.data = log_sigmas.clamp(-100, 20).data
 
         if verbose and i % 25 == 0:
             print(
@@ -152,7 +150,7 @@ def compute_fls(train_feat, baseline_feat, test_feat, gen_feat):
     baseline_nll = baseline_nlls[0].item()
 
     diff = 2 * (gen_nll - baseline_nll) / train_feat.shape[1]
-    score = math.e ** (-diff) * 100
+    score = np.e ** (-diff) * 100
     return score
 
 

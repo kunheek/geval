@@ -11,7 +11,6 @@ def parse_args():
     parser.add_argument("--model-name", type=str, help="Name of the model")
     parser.add_argument("--batch-size", type=int, default=512, help="Batch size")
     parser.add_argument("--device", type=str, default="cuda", help="Device to use")
-    parser.add_argument("--depth", type=int, default=0, help="Depth")
     parser.add_argument("--clean-resize", action="store_true", help="Clean resize")
     return parser.parse_args()
 
@@ -27,14 +26,13 @@ def main():
     torch.backends.cudnn.allow_tf32 = False
     torch.backends.cuda.matmul.allow_tf32 = False
 
-    reps = compute_reps_from_path(
+    feats = compute_reps_from_path(
         args.path,
         args.image_size,
         args.model_name,
         args.batch_size,
         torch.device(args.device),
         args.clean_resize,
-        args.depth,
         cache_dir="assets/stats",
     )
 

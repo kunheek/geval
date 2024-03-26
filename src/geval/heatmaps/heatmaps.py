@@ -8,7 +8,7 @@ from tqdm import tqdm
 from geval.heatmaps.gradcam import GradCAM
 from geval.heatmaps.heatmaps_utils import (create_grid, get_image,
                                            perturb_image, zero_one_scaling)
-from geval.models.encoder import Encoder
+from geval.encoders.encoder import Encoder
 
 
 def visualize_heatmaps(reps_real: np.array,

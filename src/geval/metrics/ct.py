@@ -20,6 +20,7 @@ def preprcoess_ct(train_feat, test_feat, gen_feat):
         del pca_xf
     return train_feat, test_feat, gen_feat
 
+
 def Zu(Pn, Qm, T):
     """Extracts distances to training nearest neighbor
     L(P_n), L(Q_m), and runs Z-scored Mann Whitney U-test.
@@ -147,6 +148,7 @@ def C_T(Pn, Pn_cells, Qm, Qm_cells, T, T_cells, tau):
     C_T = Pn_of_pi[Pi_tau].dot(Zu_scores[Pi_tau]) / np.sum(Pn_of_pi[Pi_tau])
 
     return C_T
+
 
 def compute_CTscore(train_feat, test_feat, gen_feat):
     train_feat, test_feat, gen_feat = preprcoess_ct(train_feat, test_feat, gen_feat)

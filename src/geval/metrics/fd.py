@@ -4,10 +4,10 @@ from sklearn.linear_model import LinearRegression
 from tqdm import tqdm
 
 
-def compute_statistics(reps):
-    """Compute necessary statistics from representtions"""
-    mu = np.mean(reps, axis=0)
-    sigma = np.cov(reps, rowvar=False)
+def compute_statistics(feats):
+    """Compute necessary statistics from features"""
+    mu = np.mean(feats, axis=0)
+    sigma = np.cov(feats, rowvar=False)
     mu = np.atleast_1d(mu)
     sigma = np.atleast_2d(sigma)
     return mu, sigma
@@ -51,9 +51,9 @@ def compute_FD_with_stats(mu1, mu2, sigma1, sigma2, eps=1e-6):
     if np.iscomplexobj(covmean):
         if not np.allclose(np.diagonal(covmean).imag, 0, atol=1e-3):
             m = np.max(np.abs(covmean.imag))
+            # raise ValueError('Imaginary component {}'.format(m))
             print(f"Too large imaginary component {m}. Return infinity.")
             return float('inf')
-            # raise ValueError('Imaginary component {}'.format(m))
         covmean = covmean.real
 
     tr_covmean = np.trace(covmean)
@@ -66,7 +66,7 @@ def compute_FD_with_stats(mu1, mu2, sigma1, sigma2, eps=1e-6):
     return mean_term + cov_term
 
 
-def compute_FD_with_reps(reps1, reps2, eps=1e-6):
+def compute_FD_with_feats(feats1, feats2, eps=1e-6):
     """
     Params:
     -- reps1   : activations of a representative data set (usually train)
@@ -74,20 +74,20 @@ def compute_FD_with_reps(reps1, reps2, eps=1e-6):
     Returns:
     --   : The Frechet Distance.
     """
-    mu1, sigma1 = compute_statistics(reps1)
-    mu2, sigma2 = compute_statistics(reps2)
+    mu1, sigma1 = compute_statistics(feats1)
+    mu2, sigma2 = compute_statistics(feats2)
     return compute_FD_with_stats(mu1, mu2, sigma1, sigma2, eps=eps)
 
 
-def compute_efficient_FD_with_reps(reps1, reps2):
+def compute_efficient_FD_with_feats(feats1, feats2):
     """
     A more efficient computation of FD as proposed at the following link:
     https://www.reddit.com/r/MachineLearning/comments/12hv2u6/d_a_better_way_to_compute_the_fr%C3%A9chet_inception/
 
     Confirmed to return identical values as the standard calculation above on all datasets we in our work.
     """
-    mu1, sigma1 = compute_statistics(reps1)
-    mu2, sigma2 = compute_statistics(reps2)
+    mu1, sigma1 = compute_statistics(feats1)
+    mu2, sigma2 = compute_statistics(feats2)
     sqrt_trace = np.real(linalg.eigvals(sigma1 @ sigma2)**0.5).sum()
     return ((mu1 - mu2)**2).sum() + sigma1.trace() + sigma2.trace() - 2 * sqrt_trace
 
