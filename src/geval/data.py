@@ -83,7 +83,7 @@ def get_dataloader(path, model, batch_size=128, num_workers=4):
         std = model.std
 
     transform = [transforms.ToTensor()]
-    if model.requires_normalization:
+    if model.require_normalization:
         transform.append(transforms.Normalize(mean, std))
     if not model.resize_inside:
         transform.insert(0, transforms.CenterCrop(image_size))
