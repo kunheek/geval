@@ -31,7 +31,6 @@ def compute_reps_from_batch(
         batch_size=256,
         device=torch.device("cpu"),
         clean_resize=False,
-        depth=0,
         data_format="NCHW",
 ):
     return encode_feats_from_batch(
@@ -40,7 +39,6 @@ def compute_reps_from_batch(
         batch_size,
         device,
         clean_resize,
-        depth,
         data_format,
     )
 
@@ -50,7 +48,6 @@ def get_precomputed_reps(
         image_size,
         model_name='dinov2',
         clean_resize=False,
-        depth=0,
         cache_dir=".cache/geval",
 ):
     npzpath = download(
@@ -58,8 +55,7 @@ def get_precomputed_reps(
         image_size,
         model_name,
         clean_resize,
-        depth,
-        cache_dir,
+        cache_dir=cache_dir,
     )
     try:
         reps = np.load(npzpath)["feats"]
