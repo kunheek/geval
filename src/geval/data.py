@@ -38,7 +38,7 @@ class ToUint8Tensor:
         img = np.asarray(img)
         if img.ndim == 2:
             img = np.expand_dims(img, axis=-1)
-        img = img.transpose((2, 0, 1))  # HWC -> CHW
+        img = img.transpose((2, 0, 1)).copy()  # HWC -> CHW
         return torch.as_tensor(img, dtype=torch.uint8)
 
 
