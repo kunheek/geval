@@ -33,6 +33,15 @@ def get_image_files(data_dir, max_dataset_size=None):
     return paths[:max_dataset_size]
 
 
+class ToUint8Tensor:
+    def __call__(self, img):
+        img = np.asarray(img)
+        if img.ndim == 2:
+            img = np.expand_dims(img, axis=-1)
+        img = img.transpose((2, 0, 1))  # HWC -> CHW
+        return torch.as_tensor(img, dtype=torch.uint8)
+
+
 class ImageDataset(torch.utils.data.Dataset):
     def __init__(self, images, transform=None):
         self.images = images
@@ -73,21 +82,22 @@ class FolderDataset(ImageDataset):
 
 def get_dataloader(path, model, batch_size=128, num_workers=4):
     if model is None:
-        transform = transforms.Compose([
-            transforms.Resize((32, 32)),
-            transforms.ToTensor(),
-        ])
+        raise NotImplementedError
     else:
         image_size = model.input_size[0]
         mean = model.mean
         std = model.std
 
-    transform = [transforms.ToTensor()]
+    transform = []
     if model.require_normalization:
+        transform.append(transforms.ToTensor())
         transform.append(transforms.Normalize(mean, std))
+    else:
+        transform.append(ToUint8Tensor())
     if not model.resize_inside:
         transform.insert(0, transforms.CenterCrop(image_size))
         transform.insert(0, CleanResize(image_size))
+    print("transform", transform)
     transform = transforms.Compose(transform)
 
 
