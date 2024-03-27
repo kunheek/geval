@@ -137,7 +137,7 @@ def encode_feats_from_batch(
     feats = []
     # for idx in range(0, batch.shape[0], batch_size):
     for batch in dataloader:
-        batch = batch.to(device)
+        batch = batch[0].to(device)
         if not model.resize_inside:
             batch = F.interpolate(
                 batch, size=model.input_size,
