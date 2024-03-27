@@ -72,24 +72,24 @@ def get_device_and_num_workers(device, num_workers):
     return device, num_workers
 
 
-def compute_metrics(ref_feats, test_feats, args):
+def compute_metrics(ref_feats, gen_feats, args):
     metrics_list = list(map(lambda m: m.lower(), args.metrics))
 
     scores = {m: None for m in metrics_list}
     if 'fid' in metrics_list:
         print("Computing FID \n", file=sys.stderr)
-        feat1, feat2 = ref_feats["inception"], test_feats["inception"]
+        feat1, feat2 = ref_feats["inception"], gen_feats["inception"]
         scores['fid'] = metrics.compute_FD_with_feats(feat1, feat2)
 
     if "fd_dinov2" in metrics_list:
         print("Computing FD_dinov2 \n", file=sys.stderr)
-        feat1, feat2 = ref_feats["dinov2"], test_feats["dinov2"]
+        feat1, feat2 = ref_feats["dinov2"], gen_feats["dinov2"]
         scores['fd_dinov2'] = metrics.compute_FD_with_feats(feat1, feat2)
 
     if "clip_mmd" in metrics_list:
         pass
 
-    feats = ref_feats[args.model], test_feats[args.model]
+    feats = ref_feats[args.model], gen_feats[args.model]
     if 'fd-infinity' in metrics_list:
         print("Computing fd-infinity \n", file=sys.stderr)
         scores['fd_infinity_value'] = metrics.compute_FD_infinity(*feats)
@@ -180,6 +180,7 @@ def main():
         models["clip"] = load_encoder("clip", device, resize_inside=(not args.clean_resize))
 
     # Compute features for reference dataset.
+    print(f"Computing features for reference dataset: {args.path[0]}\n", file=sys.stderr)
     ref_feats = {}
     for name, model in models.items():
         if model is None:
@@ -189,6 +190,7 @@ def main():
     del dataloader
 
     # Compute features for generated datasets.
+    print(f"Computing features for generated samples: {args.path[1]}\n", file=sys.stderr)
     gen_feats = {}
     for name, model in models.items():
         if model is None:
