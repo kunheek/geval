@@ -22,6 +22,7 @@ class DINOv2Encoder(torch.nn.Module):
         self.input_size = (224, 224)
         self.mean = (0.485, 0.456, 0.406)
         self.std = (0.229, 0.224, 0.225)
+        self.require_normalization = True
 
     def forward(self, x):
         if self.resize_inside:

@@ -33,6 +33,7 @@ class InceptionV3(torch.nn.Module):
         self.input_size = (299, 299)
         self.mean = (0.5, 0.5, 0.5)
         self.std = (0.5, 0.5, 0.5)
+        self.require_normalization = False
 
     def forward(self, x):
         if self.resize_inside:
