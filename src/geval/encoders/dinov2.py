@@ -1,4 +1,5 @@
 import torch
+from torchvision.transforms.functional import normalize
 
 VALID_ARCHITECTURES = (
     'vits14',
@@ -25,10 +26,12 @@ class DINOv2Encoder(torch.nn.Module):
         self.require_normalization = True
 
     def forward(self, x):
+        assert x.min() >= 0, "input should be in the range [0, 255]"
         if self.resize_inside:
             x = torch.nn.functional.interpolate(
                 x, size=self.input_size, mode='bicubic', antialias=True,
             )
-
         assert x.shape[2:] == self.input_size
+        x = x.float() / 255
+        x = normalize(x, mean=self.mean, std=self.std)
         return self.model(x)

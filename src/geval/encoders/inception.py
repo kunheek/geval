@@ -36,12 +36,12 @@ class InceptionV3(torch.nn.Module):
         self.require_normalization = False
 
     def forward(self, x):
+        assert x.min() >= 0, "input should be in the range [0, 255]"
         if self.resize_inside:
             features = self.base(x, return_features=True).view((x.shape[0], 2048))
         else:
             assert x.shape[1:] == (3, 299, 299)
-            # x = x - 128
-            # x = x / 128
-            x = x.add(-0.5).mul(2.0)
+            x = x - 128
+            x = x / 128
             features = self.base.layers.forward(x,).view((x.shape[0], 2048))
         return features

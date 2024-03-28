@@ -1,5 +1,6 @@
 import open_clip
 import torch
+from torchvision.transforms.functional import normalize
 
 ARCH_WEIGHT_DEFAULTS = {
     'ViT-B-32': 'laion2b_s34b_b79k',
@@ -37,6 +38,8 @@ class CLIPEncoder(torch.nn.Module):
                 x, size=self.input_size, mode='bicubic', antialias=True,
             )
         assert x.shape[2:] == self.input_size
+        x = x.float() / 255
+        x = normalize(x, mean=self.mean, std=self.std)
 
         x = self.model.visual.conv1(x)  # shape = [*, width, grid, grid]
         x = x.reshape(x.shape[0], x.shape[1], -1)  # shape = [*, width, grid ** 2]

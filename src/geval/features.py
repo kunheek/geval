@@ -113,14 +113,14 @@ def encode_feats_from_batch(
     if data_format == "NHWC":
         batch = batch.permute(0, 2, 3, 1).contiguous()
 
-    if batch.dtype == torch.uint8:
-        batch = batch.float() / 255.0
+    if batch.dtype != torch.uint8:
+        batch = batch.mul(255.0)
 
     # Convert grayscale to RGB
     if batch.shape[1] == 1:
         batch = batch.repeat(1, 3, 1, 1)
 
-    assert batch.min() >= 0 and batch.max() <= 1, f"{batch.min()}, {batch.max()}"
+    assert batch.min() >= 0 and batch.max() <= 255, f"{batch.min()}, {batch.max()}"
 
     model = load_encoder(model_name, device, resize_inside=(not clean_resize))
 
@@ -129,10 +129,6 @@ def encode_feats_from_batch(
         dataset, batch_size=batch_size, shuffle=False, num_workers=1,
         pin_memory=False, drop_last=False,
     )
-
-    mean = model.mean
-    std = model.std
-    normalize = transforms.Normalize(mean, std)
 
     feats = []
     # for idx in range(0, batch.shape[0], batch_size):
@@ -143,7 +139,6 @@ def encode_feats_from_batch(
                 batch, size=model.input_size,
                 mode='bicubic', antialias=True,
             )
-        batch = normalize(batch)
 
         pred = model(batch)
 

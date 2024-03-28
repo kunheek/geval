@@ -85,15 +85,8 @@ def get_dataloader(path, model, batch_size=128, num_workers=4):
         raise NotImplementedError
     else:
         image_size = model.input_size[0]
-        mean = model.mean
-        std = model.std
 
-    transform = []
-    if model.require_normalization:
-        transform.append(transforms.ToTensor())
-        transform.append(transforms.Normalize(mean, std))
-    else:
-        transform.append(ToUint8Tensor())
+    transform = [ToUint8Tensor()]
     if not model.resize_inside:
         transform.insert(0, transforms.CenterCrop(image_size))
         transform.insert(0, CleanResize(image_size))
