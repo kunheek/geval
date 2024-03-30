@@ -3,8 +3,8 @@ import warnings
 import numpy as np
 import torch
 
-from .download import download
-from .features import encode_feats_from_path, encode_feats_from_batch
+from .download import CACHE_DIR, download
+from .features import encode_feats_from_batch, encode_feats_from_path
 
 
 def compute_reps_from_path(
@@ -53,12 +53,12 @@ def compute_reps_from_batch(
     )
 
 
-def get_precomputed_reps(
+def get_precomputed_feats(
         dataset,
         image_size,
         model_name='dinov2',
         clean_resize=False,
-        cache_dir=".cache/geval",
+        cache_dir=CACHE_DIR,
 ):
     npzpath = download(
         dataset,
@@ -72,3 +72,23 @@ def get_precomputed_reps(
     except:
         reps = np.load(npzpath)["reps"]
     return reps
+
+
+def get_precomputed_reps(
+        dataset,
+        image_size,
+        model_name='dinov2',
+        clean_resize=False,
+        cache_dir=CACHE_DIR,
+):
+    warnings.warn(
+        "DEPRECATED: use `get_precomputed_feats` instead.",
+        DeprecationWarning,
+    )
+    return get_precomputed_feats(
+        dataset,
+        image_size,
+        model_name,
+        clean_resize,
+        cache_dir,
+    )

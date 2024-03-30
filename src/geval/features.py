@@ -1,5 +1,4 @@
 import os
-import pathlib
 
 import numpy as np
 import torch
@@ -100,6 +99,7 @@ def encode_feats_from_batch(
         device=torch.device("cpu"),
         clean_resize=False,
         data_format="NCHW",
+        as_numpy=True,
 ):
     assert data_format in {"NCHW", "NHWC"}
     assert batch.dim() in (3, 4), batch.shape
@@ -153,32 +153,6 @@ def encode_feats_from_batch(
         feats.append(pred)
 
     feats = torch.cat(feats, dim=0)
+    if as_numpy:
+        feats = feats.numpy()
     return feats
-
-
-def save_outputs(output_dir, feats, model, checkpoint, DataLoader):
-    """Save representations and other info to disk at file_path"""
-    out_path = get_path(output_dir, model, checkpoint, DataLoader)
-
-    pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
-    np.savez(out_path, model=model, feats=feats)
-
-
-def load_feats_from_path(saved_dir, model, checkpoint, DataLoader):
-    """Load representations and other info to disk at file_path"""
-    save_path = get_path(saved_dir, model, checkpoint, DataLoader)
-    feats = None
-    print('Loading from:', save_path)
-    if os.path.exists(f'{save_path}.npz'):
-        saved_file = np.load(f'{save_path}.npz')
-        feats = saved_file['feats']
-    return feats
-
-
-def get_path(output_dir, model, checkpoint, DataLoader):
-    train_str = 'train' if DataLoader.train_set else 'test'
-
-    ckpt_str = '' if checkpoint is None else f'_ckpt-{os.path.splitext(os.path.basename(checkpoint))[0]}'
-
-    hparams_str = f'feats_{DataLoader.dataset_name}_{model}{ckpt_str}_nimage-{len(DataLoader.data_set)}_{train_str}'
-    return os.path.join(output_dir, hparams_str)
