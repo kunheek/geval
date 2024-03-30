@@ -2,3 +2,4 @@ assets/stats
 data/
 experiments/
 *.pt
+*.npz/
