@@ -10,8 +10,11 @@ FID_WEIGHTS_URL = "https://github.com/mseitzer/pytorch-fid/releases/download/fid
 INCEPTION_URL = "https://nvlabs-fi-cdn.nvidia.com/stylegan2-ada-pytorch/pretrained/metrics/inception-2015-12-05.pt"  # noqa: E501
 # INCEPTION_URL = "https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/metrics/inception-2015-12-05.pkl"  # noqa: E501
 
+CACHE_DIR = os.path.expanduser(".cache/geval")
+
 
 def download_inception(fpath="./"):
+    os.makedirs(fpath, exist_ok=True)
     inception_path = os.path.join(fpath, "inception-2015-12-05.pt")
     if not os.path.exists(inception_path):
         # download the file
@@ -23,7 +26,7 @@ def download_inception(fpath="./"):
 class InceptionV3(torch.nn.Module):
     def __init__(self, resize_inside=False):
         super().__init__()
-        inception_path = download_inception()
+        inception_path = download_inception(CACHE_DIR)
         self.base = torch.jit.load(inception_path).eval()
         self.name = "inception"
         self.eval().requires_grad_(False)

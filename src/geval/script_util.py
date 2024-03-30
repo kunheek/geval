@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 import torch
 
@@ -14,6 +16,10 @@ def compute_reps_from_path(
         clean_resize=False,
         cache_dir=".cache/geval",
 ):
+    warnings.warn(
+        "DEPRECATED: use `geval.features.compute_reps_from_path` instead.",
+        DeprecationWarning,
+    )
     return encode_feats_from_path(
         path,
         image_size,
@@ -33,6 +39,10 @@ def compute_reps_from_batch(
         clean_resize=False,
         data_format="NCHW",
 ):
+    warnings.warn(
+        "DEPRECATED: use `geval.features.compute_reps_from_batch` instead.",
+        DeprecationWarning,
+    )
     return encode_feats_from_batch(
         batch,
         model_name,

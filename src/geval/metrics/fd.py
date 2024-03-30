@@ -69,8 +69,8 @@ def compute_FD_with_stats(mu1, mu2, sigma1, sigma2, eps=1e-6):
 def compute_FD_with_feats(feats1, feats2, eps=1e-6):
     """
     Params:
-    -- reps1   : activations of a representative data set (usually train)
-    -- reps2   : activations of generated data set
+    -- feats1   : features of a representative data set (usually train)
+    -- feats2   : features of generated data set
     Returns:
     --   : The Frechet Distance.
     """
@@ -92,12 +92,12 @@ def compute_efficient_FD_with_feats(feats1, feats2):
     return ((mu1 - mu2)**2).sum() + sigma1.trace() + sigma2.trace() - 2 * sqrt_trace
 
 
-def compute_FD_infinity(reps1, reps2, num_points=15):
+def compute_FD_infinity(feats1, feats2, num_points=15):
     '''
-    reps1:
-        representation of training images
-    reps2:
-        representatio of generated images
+    feats1:
+        features of training images
+    feats2:
+        features of generated images
     num_points:
         Number of FD_N we evaluate to fit a line.
         Default: 15
@@ -106,15 +106,15 @@ def compute_FD_infinity(reps1, reps2, num_points=15):
     fds = []
 
     # Choose the number of images to evaluate FID_N at regular intervals over N
-    fd_batches = np.linspace(min(5000, max(len(reps2)//10, 2)), len(reps2), num_points).astype('int32')
-    mu1, sigma1 = compute_statistics(reps1)
+    fd_batches = np.linspace(min(5000, max(len(feats2)//10, 2)), len(feats2), num_points).astype('int32')
+    mu1, sigma1 = compute_statistics(feats1)
 
     pbar = tqdm(total=num_points, desc='FD-infinity batches')
     # Evaluate FD_N
     rng = np.random.default_rng()
     for fd_batch_size in fd_batches:
         # sample, replacement allowed for different sample sizes
-        fd_activations = rng.choice(reps2, fd_batch_size, replace=False)
+        fd_activations = rng.choice(feats2, fd_batch_size, replace=False)
         mu2, sigma2 = compute_statistics(fd_activations)
         fds.append(compute_FD_with_stats(mu1, mu2, sigma1, sigma2, eps=1e-6))
         pbar.update(1)

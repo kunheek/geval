@@ -4,7 +4,6 @@ import pathlib
 import numpy as np
 import torch
 import torch.nn.functional as F
-from torchvision import transforms
 from tqdm import tqdm
 
 from .data import get_dataloader
@@ -48,9 +47,6 @@ def encode_features(model, dataloader, device):
 
         pred = model(batch)
 
-        if not torch.is_tensor(pred): # Some encoders output tuples or lists
-            pred = pred[0]
-
         # If model output is not scalar, apply global spatial average pooling.
         # This happens if you choose a dimensionality not equal 2048.
         if pred.dim() > 2:
@@ -85,7 +81,7 @@ def encode_feats_from_path(
     cache_path = os.path.join(cache_dir, f"{cachename}.npz")
     if os.path.exists(cache_path):
         print(f"Loading cached representations from {cache_path}")
-        return np.load(cache_path)["reps"]
+        return np.load(cache_path)["feats"]
 
     model = load_encoder(model_name, device, resize_inside=(not clean_resize))
     dataloader = get_dataloader(path, model, batch_size)
@@ -184,5 +180,5 @@ def get_path(output_dir, model, checkpoint, DataLoader):
 
     ckpt_str = '' if checkpoint is None else f'_ckpt-{os.path.splitext(os.path.basename(checkpoint))[0]}'
 
-    hparams_str = f'reps_{DataLoader.dataset_name}_{model}{ckpt_str}_nimage-{len(DataLoader.data_set)}_{train_str}'
+    hparams_str = f'feats_{DataLoader.dataset_name}_{model}{ckpt_str}_nimage-{len(DataLoader.data_set)}_{train_str}'
     return os.path.join(output_dir, hparams_str)

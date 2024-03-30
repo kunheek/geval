@@ -2,13 +2,13 @@ import os
 
 from huggingface_hub import hf_hub_download
 
+CACHE_DIR = os.path.expanduser(".cache/geval")
 
-def get_filename(dataset, image_size, model_name, depth, clean_resize):
+def get_filename(dataset, image_size, model_name, clean_resize):
     filename = "_".join([
         dataset,
         str(image_size),
         model_name,
-        f"depth{int(depth)}",
     ])
     if clean_resize:
         filename += "_clean"
@@ -20,10 +20,9 @@ def download(
         image_size,
         model_name="dinov2",
         clean_resize=False,
-        depth=0,
-        cache_dir=".cache/geval",
+        cache_dir=CACHE_DIR,
 ):
-    filename = get_filename(dataset, image_size, model_name, depth, clean_resize)
+    filename = get_filename(dataset, image_size, model_name, clean_resize)
     filename = filename + ".npz"
     res = False
 
