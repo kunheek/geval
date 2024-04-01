@@ -62,7 +62,7 @@ def encode_features(model, dataloader, device):
     return feats
 
 
-def encode_feats_from_path(
+def extract_feats_from_path(
         path,
         image_size=None,
         model_name='dinov2',
@@ -92,7 +92,7 @@ def encode_feats_from_path(
     return feats
 
 
-def encode_feats_from_batch(
+def extract_feats_from_batch(
         batch,
         model_name='dinov2',
         batch_size=256,

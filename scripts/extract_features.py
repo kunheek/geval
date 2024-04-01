@@ -1,7 +1,7 @@
 import argparse
 
 import torch
-from geval.features import encode_feats_from_path
+from geval.features import extract_feats_from_path
 
 
 def parse_args():
@@ -26,14 +26,14 @@ def main():
     torch.backends.cudnn.allow_tf32 = False
     torch.backends.cuda.matmul.allow_tf32 = False
 
-    feats = encode_feats_from_path(
+    feats = extract_feats_from_path(
         args.path,
         args.image_size,
         args.model,
         args.batch_size,
         torch.device(args.device),
         args.clean_resize,
-        cache_dir="assets/stats",
+        cache_dir="assets/feats",
     )
     print(feats.shape)
 

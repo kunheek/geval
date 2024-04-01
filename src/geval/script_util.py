@@ -4,7 +4,7 @@ import numpy as np
 import torch
 
 from .download import CACHE_DIR, download
-from .features import encode_feats_from_batch, encode_feats_from_path
+from .features import extract_feats_from_batch, extract_feats_from_path
 
 
 def compute_reps_from_path(
@@ -20,7 +20,7 @@ def compute_reps_from_path(
         "DEPRECATED: use `geval.features.compute_reps_from_path` instead.",
         DeprecationWarning,
     )
-    return encode_feats_from_path(
+    return extract_feats_from_path(
         path,
         image_size,
         model_name,
@@ -43,7 +43,7 @@ def compute_reps_from_batch(
         "DEPRECATED: use `geval.features.compute_reps_from_batch` instead.",
         DeprecationWarning,
     )
-    return encode_feats_from_batch(
+    return extract_feats_from_batch(
         batch,
         model_name,
         batch_size,
