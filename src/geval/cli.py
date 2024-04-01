@@ -75,7 +75,9 @@ def get_device_and_num_workers(device, num_workers):
 def compute_metrics(ref_feats, gen_feats, args):
     metrics_list = list(map(lambda m: m.lower(), args.metrics))
 
-    scores = {m: None for m in metrics_list}
+    scores = {"reference": args.path[0], "generated": args.path[1], "model": args.model}
+    for m in metrics_list:
+        scores[m] = None
     if 'fid' in metrics_list:
         print("Computing FID \n", file=sys.stderr)
         feat1, feat2 = ref_feats["inception"], gen_feats["inception"]
@@ -87,7 +89,10 @@ def compute_metrics(ref_feats, gen_feats, args):
         scores['fd_dinov2'] = metrics.compute_FD_with_feats(feat1, feat2)
 
     if "clip_mmd" in metrics_list:
-        pass
+        print("Computing Clip-MMD \n", file=sys.stderr)
+        mmd_values = metrics.compute_mmd(*feats) * 1e3
+        scores['clip_mmd'] = mmd_values.mean()
+        scores['clip_mmd_var'] = mmd_values.std()
 
     feats = ref_feats[args.model], gen_feats[args.model]
     if 'fd-infinity' in metrics_list:
@@ -124,42 +129,6 @@ def compute_metrics(ref_feats, gen_feats, args):
         print(f'{key}: {value:.5f}\n')
 
     return scores
-
-
-def save_score(scores, output_dir, model, path, ckpt):
-    ckpt_str = ''
-    if ckpt is not None:
-        ckpt_str = f'_ckpt-{os.path.splitext(os.path.basename(ckpt))[0]}'
-
-    out_str = f"fd_{model}_{'-'.join([os.path.basename(p) for p in path])}{ckpt_str}.txt"
-
-    out_path = os.path.join(output_dir, out_str)
-    pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
-
-    with open(out_path, 'w') as f:
-        for key, value in scores.items():
-            if key == 'realism':
-                continue
-            f.write(f"{key}: {value} \n")
-
-
-def save_scores(scores, args, fname=None):
-    pathlib.Path(args.output_dir).mkdir(parents=True, exist_ok=True)
-
-    run_params = vars(args)
-    run_params['reference_dataset'] = run_params['path'][0]
-    run_params['test_datasets'] = run_params['path'][1:]
-
-    ckpt_str = ''
-    print(scores, file=sys.stderr)
-
-    if fname is not None:
-        out_str = fname
-    else:
-        out_str = f"{args.model}{ckpt_str}_scores_nimage"
-    out_path = os.path.join(args.output_dir, out_str)
-    os.makedirs(args.output_dir, exist_ok=True)
-    np.savez(f'{out_path}.npz', scores=scores, run_params=run_params)
 
 
 def main():
