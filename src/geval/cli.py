@@ -124,7 +124,7 @@ def compute_metrics(ref_feats, gen_feats, args):
         scores = dict(scores, **prdc_dict)
 
     for key, value in scores.items():
-        if key == 'realism':
+        if key in ("reference", "generated", "model", "realism"):
             continue
         print(f'{key}: {value:.5f}\n')
 
