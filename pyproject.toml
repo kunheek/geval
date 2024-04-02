@@ -30,7 +30,7 @@ readme = "README.md"
 license = {file = "LICENSE"}
 
 [project.urls]
-homepage = "https://github.com/kunheek/geval"  # Replace with your project's repository URL
+homepage = "https://github.com/kunheek/geval"
 
 [project.scripts]
 geval = "geval.cli:main"

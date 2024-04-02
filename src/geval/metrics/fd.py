@@ -52,7 +52,8 @@ def compute_FD_with_stats(mu1, mu2, sigma1, sigma2, eps=1e-6):
         if not np.allclose(np.diagonal(covmean).imag, 0, atol=1e-3):
             m = np.max(np.abs(covmean.imag))
             # raise ValueError('Imaginary component {}'.format(m))
-            print(f"Too large imaginary component {m}. This could result in an inaccurate value.")
+            print(f"[WARNIMG] Too large imaginary component {m}. "
+                  "This could result in an inaccurate value.")
         covmean = covmean.real
 
     tr_covmean = np.trace(covmean)

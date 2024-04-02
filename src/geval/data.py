@@ -127,6 +127,8 @@ def get_dataloader(path, model, image_size=None, batch_size=128, num_workers=4):
     else:
         raise ValueError(f"Invalid path: {path}")
 
+    print("Number of images:", len(dataset))
+
     return torch.utils.data.DataLoader(
         dataset, batch_size=batch_size, shuffle=False,
         num_workers=num_workers, pin_memory=True, drop_last=False,
