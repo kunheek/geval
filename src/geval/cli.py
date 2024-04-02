@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import csv
 import os
-import pathlib
 import sys
+import glob
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 
 import numpy as np
@@ -160,23 +160,24 @@ def main():
     del dataloader
 
     # Compute features for generated datasets.
-    print(f"Computing features for generated samples: {args.path[1]}\n", file=sys.stderr)
-    gen_feats = {}
-    for name, model in models.items():
-        if model is None:
-            continue
-        dataloader = get_dataloader(args.path[1], model, args.batch_size)
-        gen_feats[name] = encode_features(model, dataloader, device)
+    for gen_path in args.path[1:]:
+        print(f"Computing features for generated samples: {gen_path}\n", file=sys.stderr)
+        gen_feats = {}
+        for name, model in models.items():
+            if model is None:
+                continue
+            dataloader = get_dataloader(gen_path, model, args.batch_size)
+            gen_feats[name] = encode_features(model, dataloader, device)
 
-    scores = compute_metrics(ref_feats, gen_feats, args)
-    exists = os.path.exists(args.filename)
-    with open(args.filename, "a", newline="") as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=scores.keys())
+        scores = compute_metrics(ref_feats, gen_feats, args)
+        exists = os.path.exists(args.filename)
+        with open(args.filename, "a", newline="") as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=scores.keys())
 
-        if not exists:
-            writer.writeheader()
+            if not exists:
+                writer.writeheader()
 
-        writer.writerow(scores)
+            writer.writerow(scores)
 
 
 if __name__ == "__main__":
