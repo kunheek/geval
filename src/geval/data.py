@@ -41,6 +41,9 @@ class ToUint8Tensor:
         img = img.transpose((2, 0, 1)).copy()  # HWC -> CHW
         return torch.as_tensor(img, dtype=torch.uint8)
 
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}()"
+
 
 class ImageDataset(torch.utils.data.Dataset):
     def __init__(self, images, transform=None):
@@ -83,7 +86,7 @@ class FolderDataset(ImageDataset):
 def get_dataloader(path, model, image_size=None, batch_size=128, num_workers=4):
     transform = []
     if image_size is not None and image_size != model.input_size[0]:
-        transform.append(transform.Resize(image_size, interpolation=Image.BICUBIC))
+        transform.append(transforms.Resize(image_size, interpolation=Image.BICUBIC))
     if not model.resize_inside:
         transform.append(CleanResize(model.input_size[0]))
         transform.append(transforms.CenterCrop(image_size))
