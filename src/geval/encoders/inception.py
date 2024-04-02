@@ -10,7 +10,8 @@ FID_WEIGHTS_URL = "https://github.com/mseitzer/pytorch-fid/releases/download/fid
 INCEPTION_URL = "https://nvlabs-fi-cdn.nvidia.com/stylegan2-ada-pytorch/pretrained/metrics/inception-2015-12-05.pt"  # noqa: E501
 # INCEPTION_URL = "https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/metrics/inception-2015-12-05.pkl"  # noqa: E501
 
-CACHE_DIR = os.path.expanduser(".cache/geval")
+HOME = os.environ.get("HOME", "/tmp")
+CACHE_DIR = os.path.join(HOME, ".cache/geval")
 
 
 def download_inception(fpath="./"):
