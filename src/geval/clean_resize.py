@@ -21,15 +21,15 @@ def clean_resize(output_size):
 
 
 class CleanResize:
-    def __init__(self, output_size):
-        if isinstance(output_size, int):
-            output_size = (output_size, output_size)
-        self.output_size = output_size
+    def __init__(self, size):
+        if isinstance(size, int):
+            size = (size, size)
+        self.size = size
 
     def _resize_single_channel(self, x):
         img = Image.fromarray(x, mode='F')
-        img = img.resize(self.output_size, resample=Image.BICUBIC)
-        return np.asarray(img).clip(0, 255).reshape(self.output_size[1], self.output_size[0], 1)
+        img = img.resize(self.size, resample=Image.BICUBIC)
+        return np.asarray(img).clip(0, 255).reshape(self.size[1], self.size[0], 1)
 
     def __call__(self, x):
         x = np.asarray(x.convert('RGB')).astype(np.float32)
