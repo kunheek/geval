@@ -164,7 +164,7 @@ def main():
             del dataloader
         else:
             ref_feats[name] = np.load(feat_path)["feats"]
-    exit()
+
     # Compute features for generated datasets.
     for gen_path in args.path[1:]:
         print(f"Computing features for generated samples: {gen_path}\n", file=sys.stderr)
