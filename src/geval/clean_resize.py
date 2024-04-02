@@ -22,6 +22,8 @@ def clean_resize(output_size):
 
 class CleanResize:
     def __init__(self, output_size):
+        if isinstance(output_size, int):
+            output_size = (output_size, output_size)
         self.output_size = output_size
 
     def _resize_single_channel(self, x):
@@ -34,3 +36,7 @@ class CleanResize:
         x = [self._resize_single_channel(x[:, :, idx]) for idx in range(3)]
         x = np.concatenate(x, axis=2).astype(np.float32)
         return to_tensor(x) / 255
+
+    def __repr__(self) -> str:
+        detail = f"(size={self.size})"
+        return f"{self.__class__.__name__}{detail}"
