@@ -83,7 +83,7 @@ def extract_feats_from_path(
         return np.load(cache_path)["feats"]
 
     model = load_encoder(model_name, device, resize_inside=(not clean_resize))
-    dataloader = get_dataloader(path, model, batch_size)
+    dataloader = get_dataloader(path, model, image_size, batch_size)
     feats = encode_features(model, dataloader, device)
 
     os.makedirs(cache_dir, exist_ok=True)
