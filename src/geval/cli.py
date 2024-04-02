@@ -159,7 +159,7 @@ def main():
             model_name=name, clean_resize=args.clean_resize,
         )
         if not feat_path:
-            dataloader = get_dataloader(args.path[0], model, args.batch_size)
+            dataloader = get_dataloader(args.path[0], model, args.image_size, args.batch_size)
             ref_feats[name] = encode_features(model, dataloader, device)
             del dataloader
         else:
@@ -172,7 +172,7 @@ def main():
         for name, model in models.items():
             if model is None:
                 continue
-            dataloader = get_dataloader(gen_path, model, args.batch_size)
+            dataloader = get_dataloader(gen_path, model, args.image_size, args.batch_size)
             gen_feats[name] = encode_features(model, dataloader, device)
 
         scores = compute_metrics(ref_feats, gen_feats, args)
