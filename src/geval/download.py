@@ -32,10 +32,12 @@ def download(
         res = os.path.join(cache_dir, filename)
     except:
         print("Not found in kunheekim/geval")
-    try:
-        repo_id = "nahyeonkaty/geval"
-        hf_hub_download(repo_id, filename, local_dir=cache_dir)
-        res = os.path.join(cache_dir, filename)
-    except:
-        print("Not found in nahyeonkaty/geval")
+
+    if not res:
+        try:
+            repo_id = "nahyeonkaty/geval"
+            hf_hub_download(repo_id, filename, local_dir=cache_dir)
+            res = os.path.join(cache_dir, filename)
+        except:
+            print("Not found in nahyeonkaty/geval")
     return res

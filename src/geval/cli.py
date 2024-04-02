@@ -2,7 +2,6 @@
 import csv
 import os
 import sys
-import glob
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 
 import numpy as np
@@ -31,7 +30,7 @@ parser.add_argument('--image-size', type=int,
 parser.add_argument('--train-dataset', type=str, default='imagenet',
                     help='Dataset that model was trained on. Sets proper normalization for MAE.')
 
-parser.add_argument('-bs', '--batch_size', type=int, default=128,
+parser.add_argument('-bs', '--batch-size', type=int, default=128,
                     help='Batch size to use')
 
 parser.add_argument('--num-workers', type=int, default=4,
@@ -155,10 +154,17 @@ def main():
     for name, model in models.items():
         if model is None:
             continue
-        dataloader = get_dataloader(args.path[0], model, args.batch_size)
-        ref_feats[name] = encode_features(model, dataloader, device)
-    del dataloader
-
+        feat_path = download.download(
+            args.path[0], args.image_size,
+            model_name=name, clean_resize=args.clean_resize,
+        )
+        if not feat_path:
+            dataloader = get_dataloader(args.path[0], model, args.batch_size)
+            ref_feats[name] = encode_features(model, dataloader, device)
+            del dataloader
+        else:
+            ref_feats[name] = np.load(feat_path)["feats"]
+    exit()
     # Compute features for generated datasets.
     for gen_path in args.path[1:]:
         print(f"Computing features for generated samples: {gen_path}\n", file=sys.stderr)

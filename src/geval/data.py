@@ -80,18 +80,16 @@ class FolderDataset(ImageDataset):
         return Image.open(self.images[i]).convert('RGB')
 
 
-def get_dataloader(path, model, batch_size=128, num_workers=4):
-    if model is None:
-        raise NotImplementedError
-    else:
-        image_size = model.input_size[0]
-
-    transform = [ToUint8Tensor()]
+def get_dataloader(path, model, image_size=None, batch_size=128, num_workers=4):
+    transform = []
+    if image_size is not None and image_size != model.input_size[0]:
+        transform.append(CleanResize(image_size))
     if not model.resize_inside:
-        transform.insert(0, transforms.CenterCrop(image_size))
-        transform.insert(0, CleanResize(image_size))
-    print("transform", transform)
+        transform.append(CleanResize(model.input_size[0]))
+        transform.append(transforms.CenterCrop(image_size))
+    transform.append(ToUint8Tensor())
     transform = transforms.Compose(transform)
+    print("transform:\n", transform)
 
 
     if path.lower().startswith("cifar100"):
