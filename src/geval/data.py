@@ -83,7 +83,7 @@ class FolderDataset(ImageDataset):
 def get_dataloader(path, model, image_size=None, batch_size=128, num_workers=4):
     transform = []
     if image_size is not None and image_size != model.input_size[0]:
-        transform.append(CleanResize(image_size))
+        transform.append(transform.Resize(image_size, interpolation=Image.BICUBIC))
     if not model.resize_inside:
         transform.append(CleanResize(model.input_size[0]))
         transform.append(transforms.CenterCrop(image_size))
